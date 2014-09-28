@@ -48,26 +48,27 @@ function frob.class:new(...)
 	copy = frob.extend({}, self)
 	copy.template = self
 	copy:construct(...)
+	copy.construct = nil
+	copy.new = nil
 	return copy
 end
 
 -- event emitter/handler. fine for either extending or appending
-frob.evt = {}
-frob.evt.events = {}
+frob.evt = {private = {events = {}}}
 frob.eventEmitter = frob.evt
 
 -- add an event, and a function to run when it's fired
 function frob.evt:on(event, listener)
-	if not self.events[event] then
-		self.events[event] = {}
+	if not self.private.events[event] then
+		self.private.events[event] = {}
 	end
 
-	table.insert(self.events[event], listener)
+	table.insert(self.private.events[event], listener)
 end
 
 -- remove a listener from a specified event
 function frob.evt:off(event, listener)
-	for k,v in pairs(self.events[event]) do
+	for k,v in pairs(self.private.events[event]) do
 		if v == listener then
 			k = nil
 		end
@@ -75,13 +76,13 @@ function frob.evt:off(event, listener)
 end
 
 function frob.evt:allOff(event)
-	self.events[event] = nil
+	self.private.events[event] = nil
 end
 
 -- fire an event with some arguments to pass to the target function
 function frob.evt:fire(event, ...)
-	if self.events and self.events[event] then
-		for i,v in ipairs(self.events[event]) do
+	if self.private.events and self.private.events[event] then
+		for i,v in ipairs(self.private.events[event]) do
 			if type(v) == "function" then
 				v(...)
 			end
